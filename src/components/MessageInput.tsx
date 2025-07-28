@@ -102,7 +102,7 @@ export default function MessageInput({ value, onChange, onSubmit, currentChannel
             onChange={(e) => onChange(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={`Message #${currentChannel}...`}
-            className={`chat-input resize-none min-h-[3rem] max-h-[120px] ${
+            className={`chat-input resize-none min-h-[3rem] max-h-[120px] overflow-y-auto ${
               isOverLimit ? 'border-chat-error focus:ring-chat-error/50' : ''
             }`}
             disabled={isSubmitting}

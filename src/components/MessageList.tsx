@@ -101,7 +101,7 @@ export default function MessageList({ messages, currentChannel }: MessageListPro
   }
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+    <div className="h-full p-4 space-y-2">
       {messages.length === 0 ? (
         <div className="text-center text-chat-text-muted py-8">
           <p className="text-lg">Welcome to #{currentChannel}</p>
