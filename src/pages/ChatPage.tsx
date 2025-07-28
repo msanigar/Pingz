@@ -17,8 +17,7 @@ export default function ChatPage() {
   const sendMessage = useMutation(api.chat.sendMessage)
   const updateUserPresence = useMutation(api.chat.updateUserPresence)
   
-  // Debug organization info
-  const userOrgInfo = useQuery(api.chat.getUserOrgInfo)
+
 
   const [newMessage, setNewMessage] = useState('')
 
