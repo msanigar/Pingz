@@ -98,8 +98,8 @@ export default function ChannelSidebar({ currentChannel, onChannelChange, isOpen
 
             {/* Custom channels */}
             {allChannels
-              .filter(channel => !defaultChannels.includes(channel.name))
-              .map(channel => (
+              .filter((channel: any) => !defaultChannels.includes(channel.name))
+              .map((channel: any) => (
                 <button
                   key={channel._id}
                   onClick={() => handleChannelClick(channel.name)}

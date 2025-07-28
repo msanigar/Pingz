@@ -132,7 +132,7 @@ export default function SearchBar({ currentChannel, onMessageClick }: SearchBarP
               <div className="px-3 py-1 text-xs text-chat-text-muted border-b border-chat-border">
                 {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} in #{currentChannel}
               </div>
-              {searchResults.map((result) => (
+              {searchResults.map((result: any) => (
                 <button
                   key={result._id}
                   onClick={() => handleResultClick(result._id)}
