@@ -1,7 +1,7 @@
 export default {
   providers: [
     {
-      domain: "https://clerk.com",
+      domain: "https://still-moccasin-38.clerk.accounts.dev",
       applicationID: "convex",
     },
   ]

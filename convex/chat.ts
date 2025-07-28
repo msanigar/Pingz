@@ -258,7 +258,10 @@ export const testAuth = query({
       const identity = await ctx.auth.getUserIdentity();
       return {
         hasAuth: !!identity,
-        subject: identity?.subject || null,
+        subject: (identity as any)?.subject || null,
+        email: (identity as any)?.email || null,
+        primaryEmail: (identity as any)?.primaryEmailAddress?.emailAddress || null,
+        fullIdentity: identity ? JSON.stringify(identity, null, 2) : null,
         timestamp: Date.now()
       };
     } catch (error) {

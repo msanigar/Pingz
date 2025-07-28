@@ -2,6 +2,28 @@ import { useState } from 'react'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 
+// Debug component to show user info
+function DebugUserInfo() {
+  const testAuth = useQuery(api.chat.testAuth)
+  
+  if (!testAuth) return <div className="text-chat-text-muted">Loading user info...</div>
+  
+  return (
+    <div className="mt-2 p-2 bg-chat-surface rounded text-xs">
+      <div className="text-chat-accent font-bold">Your Identity:</div>
+      <div className="text-chat-text-muted break-all">
+        Subject: {testAuth.subject || 'null'}
+      </div>
+      <div className="text-chat-text-muted break-all">
+        Email: {testAuth.email || 'null'}
+      </div>
+      <div className="text-chat-text-muted break-all">
+        Primary Email: {testAuth.primaryEmail || 'null'}
+      </div>
+    </div>
+  )
+}
+
 interface ChannelSidebarProps {
   currentChannel: string
   onChannelChange: (channel: string) => void
@@ -90,7 +112,13 @@ export default function ChannelSidebar({ currentChannel, onChannelChange, isOpen
         {/* Header */}
         <div className="p-4 border-b border-chat-border bg-gradient-subtle">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold gradient-text">Channels</h2>
+            <div>
+              <h2 className="text-lg font-semibold gradient-text">Channels</h2>
+              {/* Debug: Show admin status */}
+              <div className="text-xs text-chat-text-muted mt-1">
+                Admin: {isAdmin === undefined ? 'Loading...' : isAdmin ? 'YES ✓' : 'NO ✗'}
+              </div>
+            </div>
             <button
               onClick={onClose}
               className="md:hidden p-1 hover:bg-chat-surface rounded transition-colors"
@@ -125,10 +153,10 @@ export default function ChannelSidebar({ currentChannel, onChannelChange, isOpen
                       if (channelObj) handleDeleteChannel(channelObj._id, channel)
                     }}
                     disabled={deletingChannelId === allChannels.find((c: any) => c.name === channel)?._id}
-                    className="opacity-0 group-hover:opacity-100 ml-2 p-1 text-chat-error hover:text-red-300 hover:bg-red-900/20 rounded transition-all"
+                    className="ml-2 p-1 text-chat-error hover:text-red-300 hover:bg-red-900/20 rounded transition-all opacity-70 hover:opacity-100"
                     title={`Delete #${channel}`}
                   >
-                    {deletingChannelId === allChannels.find((c: any) => c.name === channel)?._id ? '...' : '×'}
+                    {deletingChannelId === allChannels.find((c: any) => c.name === channel)?._id ? '...' : '🗑️'}
                   </button>
                 )}
               </div>
@@ -155,10 +183,10 @@ export default function ChannelSidebar({ currentChannel, onChannelChange, isOpen
                     <button
                       onClick={() => handleDeleteChannel(channel._id, channel.name)}
                       disabled={deletingChannelId === channel._id}
-                      className="opacity-0 group-hover:opacity-100 ml-2 p-1 text-chat-error hover:text-red-300 hover:bg-red-900/20 rounded transition-all"
+                      className="ml-2 p-1 text-chat-error hover:text-red-300 hover:bg-red-900/20 rounded transition-all opacity-70 hover:opacity-100"
                       title={`Delete #${channel.name}`}
                     >
-                      {deletingChannelId === channel._id ? '...' : '×'}
+                      {deletingChannelId === channel._id ? '...' : '🗑️'}
                     </button>
                   )}
                 </div>
@@ -224,6 +252,17 @@ export default function ChannelSidebar({ currentChannel, onChannelChange, isOpen
             </div>
           </div>
         )}
+
+        {/* Debug section - remove after testing */}
+        <div className="p-4 border-t border-chat-border bg-chat-bg/50">
+          <div className="text-xs space-y-1">
+            <div className="text-chat-text-muted">Debug Info:</div>
+            <div className="text-chat-text-muted">Channels: {allChannels.length}</div>
+            <div className="text-chat-text-muted">Admin Status: {String(isAdmin)}</div>
+            <div className="text-chat-text-muted">Creating: {String(isCreating)}</div>
+            <DebugUserInfo />
+          </div>
+        </div>
       </div>
     </div>
   )
