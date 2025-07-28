@@ -27,10 +27,26 @@ export default function AuthPage() {
               },
               elements: {
                 socialButtonsIconButton: {
-                  filter: 'invert(1)',
+                  backgroundColor: '#333333',
+                  border: '1px solid #555555',
+                  color: '#ffffff',
+                  '&:hover': {
+                    backgroundColor: '#444444',
+                  }
+                },
+                socialButtonsProviderIcon: {
+                  filter: 'invert(1) brightness(0.9)',
                 },
                 providerIcon: {
-                  filter: 'invert(1)',
+                  filter: 'invert(1) brightness(0.9)',
+                },
+                socialButtonsBlockButton: {
+                  backgroundColor: '#333333',
+                  border: '1px solid #555555',
+                  color: '#ffffff',
+                  '&:hover': {
+                    backgroundColor: '#444444',
+                  }
                 }
               }
             }}
