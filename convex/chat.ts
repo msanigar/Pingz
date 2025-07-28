@@ -124,21 +124,37 @@ export const searchMessages = query({
 // Helper function to check if user is admin (hardcoded for simplicity)
 const isAdmin = (identity: any): boolean => {
   try {
-    if (!identity || typeof identity !== 'object') return false;
+    console.log("isAdmin: Starting with identity:", typeof identity);
+    
+    if (!identity || typeof identity !== 'object') {
+      console.log("isAdmin: Invalid identity object");
+      return false;
+    }
     
     const adminUserId = 'user_30UslN6tLnNxsknxxrs0qBzyWpJ';
     const adminEmail = 'myles.sanigar@gmail.com';
     
+    console.log("isAdmin: Checking subject:", identity.subject);
+    
     // Check by user ID (subject)
-    if (identity.subject === adminUserId) return true;
+    if (identity.subject === adminUserId) {
+      console.log("isAdmin: Admin found by subject ID");
+      return true;
+    }
     
     // Check by email (try different possible email fields with safe access)
     const userEmail = identity.emailAddress || 
                      identity.email || 
                      (identity.primaryEmailAddress && identity.primaryEmailAddress.emailAddress);
     
-    if (userEmail === adminEmail) return true;
+    console.log("isAdmin: Checking email:", userEmail);
     
+    if (userEmail === adminEmail) {
+      console.log("isAdmin: Admin found by email");
+      return true;
+    }
+    
+    console.log("isAdmin: Not admin");
     return false;
   } catch (error) {
     console.error("Error in isAdmin function:", error);
@@ -234,18 +250,47 @@ export const deleteChannel = mutation({
   },
 });
 
+// Simple test query to check auth
+export const testAuth = query({
+  args: {},
+  handler: async (ctx) => {
+    try {
+      const identity = await ctx.auth.getUserIdentity();
+      return {
+        hasAuth: !!identity,
+        subject: identity?.subject || null,
+        timestamp: Date.now()
+      };
+    } catch (error) {
+      return {
+        hasAuth: false,
+        error: String(error),
+        timestamp: Date.now()
+      };
+    }
+  },
+});
+
 // Check if current user is admin using simple hardcoded check
 export const isCurrentUserAdmin = query({
   args: {},
   handler: async (ctx) => {
     try {
+      console.log("isCurrentUserAdmin: Starting query");
       const identity = await ctx.auth.getUserIdentity();
+      console.log("isCurrentUserAdmin: Got identity:", JSON.stringify(identity, null, 2));
+      
       if (!identity) {
+        console.log("isCurrentUserAdmin: No identity found");
         return false; // User not authenticated
       }
-      return isAdmin(identity);
+      
+      const result = isAdmin(identity);
+      console.log("isCurrentUserAdmin: Admin check result:", result);
+      return result;
     } catch (error) {
       console.error("Error in isCurrentUserAdmin query:", error);
+      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
       return false; // Default to non-admin if there's an error
     }
   },
