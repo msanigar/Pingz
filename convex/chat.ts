@@ -123,10 +123,19 @@ export const searchMessages = query({
 
 // Helper function to check if user is admin (hardcoded for simplicity)
 const isAdmin = (identity: any): boolean => {
+  if (!identity) return false;
+  
   const adminUserId = 'user_30UslN6tLnNxsknxxrs0qBzyWpJ';
   const adminEmail = 'myles.sanigar@gmail.com';
   
-  return identity?.subject === adminUserId || identity?.emailAddress === adminEmail;
+  // Check by user ID (subject)
+  if (identity.subject === adminUserId) return true;
+  
+  // Check by email (try different possible email fields)
+  const userEmail = identity.emailAddress || identity.email || identity.primaryEmailAddress?.emailAddress;
+  if (userEmail === adminEmail) return true;
+  
+  return false;
 };
 
 // Remove the complex setup functions since we're using simple hardcoded admin
@@ -221,8 +230,13 @@ export const deleteChannel = mutation({
 export const isCurrentUserAdmin = query({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    return isAdmin(identity);
+    try {
+      const identity = await ctx.auth.getUserIdentity();
+      return isAdmin(identity);
+    } catch (error) {
+      console.error("Error checking admin status:", error);
+      return false; // Default to non-admin if there's an error
+    }
   },
 });
 

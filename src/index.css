@@ -1,34 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-family: 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+  * {
+    @apply border-chat-border;
   }
   
   body {
-    @apply bg-chat-bg text-chat-text;
-    margin: 0;
-    padding: 0;
+    @apply bg-chat-bg text-chat-text font-mono;
+    font-feature-settings: 'liga' 1, 'calt' 1;
   }
   
-  * {
-    box-sizing: border-box;
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-chat-bg;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gradient-primary rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gradient-primary-hover;
   }
 }
 
 @layer components {
-  .chat-input {
-    @apply bg-chat-surface border border-chat-border text-chat-text placeholder-chat-text-muted;
-    @apply focus:border-chat-accent focus:ring-1 focus:ring-chat-accent;
+  .chat-container {
+    @apply bg-chat-bg text-chat-text min-h-screen;
   }
   
   .chat-message {
-    @apply font-mono text-sm leading-relaxed;
+    @apply p-3 border-b border-chat-border/30 hover:bg-gradient-subtle transition-colors duration-200;
   }
   
-  .chat-timestamp {
-    @apply text-chat-text-muted text-xs;
+  .chat-input {
+    @apply w-full p-3 bg-chat-surface border border-chat-border rounded-lg 
+           text-chat-text placeholder-chat-text-muted resize-none
+           focus:outline-none focus:ring-2 focus:ring-chat-primary/50 focus:border-chat-primary
+           transition-all duration-200;
+  }
+  
+  .chat-button {
+    @apply px-4 py-2 bg-gradient-primary text-white rounded-lg font-medium
+           hover:bg-gradient-primary-hover transform hover:scale-105
+           transition-all duration-200 shadow-lg hover:shadow-xl;
+  }
+  
+  .chat-button-secondary {
+    @apply px-4 py-2 bg-chat-surface text-chat-text border border-chat-border rounded-lg
+           hover:bg-chat-border hover:border-chat-primary
+           transition-all duration-200;
+  }
+  
+  .chat-sidebar {
+    @apply bg-chat-surface border-r border-chat-border;
+  }
+  
+  .channel-item {
+    @apply w-full text-left px-3 py-2 rounded-lg transition-all duration-200
+           hover:bg-gradient-subtle hover:border-l-4 hover:border-l-chat-primary;
+  }
+  
+  .channel-item-active {
+    @apply bg-gradient-primary text-white shadow-lg;
+  }
+  
+  .admin-badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+           bg-gradient-primary text-white shadow-sm;
+  }
+  
+  .reaction-button {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs
+           bg-chat-surface border border-chat-border
+           hover:border-chat-primary hover:bg-gradient-subtle
+           transition-all duration-200;
+  }
+  
+  .online-indicator {
+    @apply w-2 h-2 bg-chat-success rounded-full animate-pulse;
+  }
+  
+  .gradient-text {
+    @apply bg-gradient-primary bg-clip-text text-transparent;
   }
 } 

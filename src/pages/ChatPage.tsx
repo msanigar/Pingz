@@ -1,6 +1,6 @@
-import { useUser, UserButton } from '@clerk/clerk-react'
-import { useQuery, useMutation } from 'convex/react'
 import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/clerk-react'
+import { useQuery, useMutation } from 'convex/react'
 import { api } from '../../convex/_generated/api'
 import { useAppStore } from '../state/useAppStore'
 import MessageList from '../components/MessageList'
@@ -16,26 +16,24 @@ export default function ChatPage() {
   const onlineUsersCount = useQuery(api.chat.getOnlineUsersCount)
   const sendMessage = useMutation(api.chat.sendMessage)
   const updateUserPresence = useMutation(api.chat.updateUserPresence)
-  
-
 
   const [newMessage, setNewMessage] = useState('')
 
-  // Update user presence on mount and periodically
+  // Update user presence
   useEffect(() => {
     if (!user) return
 
     const updatePresence = () => {
       updateUserPresence({
         username: user.firstName || user.username || 'Anonymous',
-        avatarUrl: user.imageUrl,
+        avatarUrl: user.imageUrl
       })
     }
 
     // Update immediately
     updatePresence()
 
-    // Update every 2 minutes to stay online
+    // Update every 2 minutes
     const interval = setInterval(updatePresence, 2 * 60 * 1000)
 
     return () => clearInterval(interval)
@@ -69,7 +67,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen flex bg-chat-bg">
+    <div className="chat-container h-screen flex">
       {/* Channel Sidebar */}
       <ChannelSidebar
         currentChannel={currentChannel}
@@ -79,71 +77,44 @@ export default function ChatPage() {
       />
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="flex items-center justify-between p-4 border-b border-chat-border bg-chat-surface">
+        <div className="flex items-center justify-between p-4 border-b border-chat-border bg-gradient-subtle">
           <div className="flex items-center space-x-4">
-            {/* Mobile menu button */}
             <button
               onClick={toggleSidebar}
-              className="md:hidden text-chat-text-muted hover:text-chat-text"
+              className="md:hidden p-2 hover:bg-chat-surface rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <span className="text-chat-text">☰</span>
             </button>
-
-            {/* Channel info */}
-            <div className="flex items-center space-x-3">
-              <h1 className="text-xl font-bold text-chat-accent font-mono">
-                #{currentChannel}
-              </h1>
-              <div className="flex items-center space-x-4 text-sm text-chat-text-muted">
-                <span>{messages?.length || 0} messages</span>
-                <span>{onlineUsersCount || 0} online</span>
-              </div>
+            <div>
+              <h1 className="text-xl font-bold gradient-text">#{currentChannel}</h1>
+              {onlineUsersCount !== undefined && (
+                <div className="flex items-center space-x-2 text-sm text-chat-text-muted">
+                  <div className="online-indicator"></div>
+                  <span>{onlineUsersCount} online</span>
+                </div>
+              )}
             </div>
           </div>
-
-          <div className="flex items-center space-x-4">
-            {/* Search Bar */}
-            <div className="hidden sm:block w-64">
-              <SearchBar 
-                currentChannel={currentChannel}
-                onMessageClick={handleMessageClick}
-              />
-            </div>
-
-            {/* User Info */}
-            <div className="flex items-center space-x-2">
-              <span className="text-chat-text-muted text-sm hidden sm:block">
-                {user?.firstName || user?.username}
-              </span>
-              <UserButton 
-                appearance={{
-                  variables: {
-                    colorPrimary: '#00ff00',
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </header>
-
-        {/* Mobile Search (visible when sidebar is closed) */}
-        <div className="sm:hidden p-4 border-b border-chat-border bg-chat-surface">
+          
+          {/* Search Bar */}
           <SearchBar 
-            currentChannel={currentChannel}
+            currentChannel={currentChannel} 
             onMessageClick={handleMessageClick}
           />
         </div>
 
-        {/* Chat Messages and Input */}
-        <div className="flex-1 flex flex-col min-h-0">
+        {/* Messages */}
+        <div className="flex-1 overflow-hidden">
           <MessageList 
             messages={messages || []} 
             currentChannel={currentChannel}
           />
+        </div>
+
+        {/* Message Input */}
+        <div className="border-t border-chat-border bg-gradient-subtle">
           <MessageInput 
             value={newMessage}
             onChange={setNewMessage}
