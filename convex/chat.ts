@@ -121,6 +121,17 @@ export const searchMessages = query({
   },
 });
 
+// Helper function to check if user is admin (hardcoded for simplicity)
+const isAdmin = (identity: any): boolean => {
+  const adminUserId = 'user_30UslN6tLnNxsknxxrs0qBzyWpJ';
+  const adminEmail = 'myles.sanigar@gmail.com';
+  
+  return identity?.subject === adminUserId || identity?.emailAddress === adminEmail;
+};
+
+// Remove the complex setup functions since we're using simple hardcoded admin
+// ensureUserInOrganization and setUserRole are no longer needed
+
 // Get all channels
 export const getChannels = query({
   args: {},
@@ -139,19 +150,98 @@ export const createChannel = mutation({
     const identity = await ctx.auth.getUserIdentity();
     const createdBy = identity?.subject || "anonymous";
 
+    // Force lowercase and clean the name
+    const cleanName = name.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+    
+    if (!cleanName) {
+      throw new Error("Channel name must contain at least one letter or number");
+    }
+
     // Check if channel already exists
     const existing = await ctx.db
       .query("channels")
-      .withIndex("by_name", (q) => q.eq("name", name))
+      .withIndex("by_name", (q) => q.eq("name", cleanName))
       .first();
     
     if (existing) throw new Error("Channel already exists");
 
     return await ctx.db.insert("channels", {
-      name,
+      name: cleanName,
       description,
       createdBy,
     });
+  },
+});
+
+// Delete a channel (admin only)
+export const deleteChannel = mutation({
+  args: {
+    channelId: v.id("channels"),
+  },
+  handler: async (ctx, { channelId }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    
+    if (!identity) {
+      throw new Error("Must be authenticated to delete channels");
+    }
+
+    // Check if user is admin using hardcoded admin check
+    if (!isAdmin(identity)) {
+      throw new Error("Only the admin can delete channels");
+    }
+
+    // Don't allow deletion of "general" channel
+    const channel = await ctx.db.get(channelId);
+    if (!channel) {
+      throw new Error("Channel not found");
+    }
+    
+    if (channel.name === "general") {
+      throw new Error("Cannot delete the general channel");
+    }
+
+    // Delete the channel
+    await ctx.db.delete(channelId);
+    
+    // Move messages from deleted channel to general
+    const messages = await ctx.db
+      .query("messages")
+      .withIndex("by_channel", (q) => q.eq("channel", channel.name))
+      .collect();
+    
+    for (const message of messages) {
+      await ctx.db.patch(message._id, { channel: "general" });
+    }
+
+    return { success: true, channelName: channel.name };
+  },
+});
+
+// Check if current user is admin using simple hardcoded check
+export const isCurrentUserAdmin = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    return isAdmin(identity);
+  },
+});
+
+// Get current user's admin status
+export const getUserOrgInfo = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+    
+    const userIsAdmin = isAdmin(identity);
+    
+    return {
+      isInOrg: true,
+      orgId: 'pingz',
+      orgRole: userIsAdmin ? 'admin' : 'member',
+      isAdmin: userIsAdmin,
+      usingSimpleAdmin: true
+    };
   },
 });
 
