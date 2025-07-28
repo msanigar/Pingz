@@ -109,4 +109,27 @@
   .gradient-text {
     @apply bg-gradient-primary bg-clip-text text-transparent;
   }
+  
+  /* Clerk UserButton integration */
+  .cl-userButton {
+    transition: transform 0.2s ease;
+  }
+  
+  .cl-userButton:hover {
+    transform: scale(1.05);
+  }
+  
+  /* Fix Clerk popover hover states for better contrast */
+  .cl-userButtonPopoverActionButton:hover {
+    background: linear-gradient(135deg, rgba(39, 171, 222, 0.3) 0%, rgba(0, 169, 158, 0.3) 100%) !important;
+    color: white !important;
+  }
+  
+  .cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonText {
+    color: white !important;
+  }
+  
+  .cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonIcon {
+    color: white !important;
+  }
 } 

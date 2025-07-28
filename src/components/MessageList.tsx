@@ -1,13 +1,64 @@
 import { useEffect, useRef } from 'react'
-import { useMutation } from 'convex/react'
+import { useMutation, useQuery } from 'convex/react'
 import { useUser } from '@clerk/clerk-react'
 import { api } from '../../convex/_generated/api'
+
+// Component to display current user avatar dynamically
+function DynamicUserAvatar({ userId, fallbackName, fallbackAvatar }: { 
+  userId?: string, 
+  fallbackName: string, 
+  fallbackAvatar?: string 
+}) {
+  const currentUserInfo = useQuery(api.chat.getCurrentUserInfo, 
+    userId ? { userId } : "skip"
+  )
+  
+  // Use current user info if available, otherwise fall back to stored data
+  const displayName = currentUserInfo?.username || fallbackName
+  const displayAvatar = currentUserInfo?.avatarUrl || fallbackAvatar
+  
+  return (
+    <div className="flex-shrink-0">
+      {displayAvatar ? (
+        <img 
+          src={displayAvatar} 
+          alt={displayName}
+          className="w-8 h-8 rounded-full"
+        />
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-chat-accent flex items-center justify-center text-chat-bg font-bold text-sm">
+          {displayName.charAt(0).toUpperCase()}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Component to display current username dynamically
+function DynamicUserName({ userId, fallbackName }: { 
+  userId?: string, 
+  fallbackName: string
+}) {
+  const currentUserInfo = useQuery(api.chat.getCurrentUserInfo, 
+    userId ? { userId } : "skip"
+  )
+  
+  // Use current user info if available, otherwise fall back to stored data
+  const displayName = currentUserInfo?.username || fallbackName
+  
+  return (
+    <span className="text-chat-accent font-medium">
+      {displayName}
+    </span>
+  )
+}
 
 interface Message {
   _id: string
   text: string
   author: string
   _creationTime: number
+  userId?: string
   avatarUrl?: string
   reactions?: Array<{
     emoji: string
@@ -114,27 +165,20 @@ export default function MessageList({ messages, currentChannel }: MessageListPro
           return (
             <div key={message._id} className="chat-message group hover:bg-chat-surface/30 px-3 py-2 rounded-lg">
               <div className="flex items-start space-x-3">
-                {/* Avatar */}
-                <div className="flex-shrink-0">
-                  {message.avatarUrl ? (
-                    <img 
-                      src={message.avatarUrl} 
-                      alt={message.author}
-                      className="w-8 h-8 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-chat-accent flex items-center justify-center text-chat-bg font-bold text-sm">
-                      {message.author.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
+                {/* Dynamic User Avatar */}
+                <DynamicUserAvatar 
+                  userId={message.userId} 
+                  fallbackName={message.author}
+                  fallbackAvatar={message.avatarUrl}
+                />
                 
                 {/* Message content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline space-x-2">
-                    <span className="text-chat-accent font-medium">
-                      {message.author}
-                    </span>
+                    <DynamicUserName 
+                      userId={message.userId} 
+                      fallbackName={message.author}
+                    />
                     <span className="chat-timestamp text-xs">
                       {formatTime(message._creationTime)}
                     </span>

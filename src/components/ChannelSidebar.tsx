@@ -1,28 +1,11 @@
 import { useState } from 'react'
 import { useQuery, useMutation } from 'convex/react'
+import { useUser, UserButton } from '@clerk/clerk-react'
 import { api } from '../../convex/_generated/api'
 
-// Debug component to show user info
-function DebugUserInfo() {
-  const testAuth = useQuery(api.chat.testAuth)
-  
-  if (!testAuth) return <div className="text-chat-text-muted">Loading user info...</div>
-  
-  return (
-    <div className="mt-2 p-2 bg-chat-surface rounded text-xs">
-      <div className="text-chat-accent font-bold">Your Identity:</div>
-      <div className="text-chat-text-muted break-all">
-        Subject: {testAuth.subject || 'null'}
-      </div>
-      <div className="text-chat-text-muted break-all">
-        Email: {testAuth.email || 'null'}
-      </div>
-      <div className="text-chat-text-muted break-all">
-        Primary Email: {testAuth.primaryEmail || 'null'}
-      </div>
-    </div>
-  )
-}
+
+
+
 
 interface ChannelSidebarProps {
   currentChannel: string
@@ -32,6 +15,7 @@ interface ChannelSidebarProps {
 }
 
 export default function ChannelSidebar({ currentChannel, onChannelChange, isOpen, onClose }: ChannelSidebarProps) {
+  const { user } = useUser()
   const channels = useQuery(api.chat.getChannels)
   const isAdmin = useQuery(api.chat.isCurrentUserAdmin)
   const createChannel = useMutation(api.chat.createChannel)
@@ -244,6 +228,37 @@ export default function ChannelSidebar({ currentChannel, onChannelChange, isOpen
           </div>
         </div>
 
+                {/* User Profile Section */}
+        {user && (
+          <div className="p-4 border-t border-chat-border bg-gradient-subtle">
+            <div className="flex items-center space-x-3">
+              <UserButton 
+                appearance={{
+                  elements: {
+                    avatarBox: "w-10 h-10",
+                    userButtonPopoverCard: "bg-chat-surface border border-chat-border shadow-xl",
+                    userButtonPopoverActions: "bg-chat-surface",
+                    userButtonPopoverActionButton: "text-chat-text hover:bg-gradient-to-r hover:from-chat-primary/20 hover:to-chat-secondary/20 hover:text-white transition-all duration-200",
+                    userButtonPopoverActionButtonText: "text-chat-text group-hover:text-white",
+                    userButtonPopoverActionButtonIcon: "text-chat-text-muted group-hover:text-white",
+                    userButtonPopoverFooter: "bg-chat-surface border-t border-chat-border",
+                  }
+                }}
+              />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-chat-text truncate">
+                  {user.firstName || user.username || 'Anonymous'}
+                </div>
+                <div className="text-xs text-chat-text-muted truncate">
+                  {user.primaryEmailAddress?.emailAddress}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
+
         {/* Admin indicator */}
         {isAdmin && (
           <div className="p-4 border-t border-chat-border bg-gradient-subtle">
@@ -253,16 +268,7 @@ export default function ChannelSidebar({ currentChannel, onChannelChange, isOpen
           </div>
         )}
 
-        {/* Debug section - remove after testing */}
-        <div className="p-4 border-t border-chat-border bg-chat-bg/50">
-          <div className="text-xs space-y-1">
-            <div className="text-chat-text-muted">Debug Info:</div>
-            <div className="text-chat-text-muted">Channels: {allChannels.length}</div>
-            <div className="text-chat-text-muted">Admin Status: {String(isAdmin)}</div>
-            <div className="text-chat-text-muted">Creating: {String(isCreating)}</div>
-            <DebugUserInfo />
-          </div>
-        </div>
+
       </div>
     </div>
   )

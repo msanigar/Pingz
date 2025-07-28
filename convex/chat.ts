@@ -124,21 +124,15 @@ export const searchMessages = query({
 // Helper function to check if user is admin (hardcoded for simplicity)
 const isAdmin = (identity: any): boolean => {
   try {
-    console.log("isAdmin: Starting with identity:", typeof identity);
-    
     if (!identity || typeof identity !== 'object') {
-      console.log("isAdmin: Invalid identity object");
       return false;
     }
     
     const adminUserId = 'user_30UslN6tLnNxsknxxrs0qBzyWpJ';
     const adminEmail = 'myles.sanigar@gmail.com';
     
-    console.log("isAdmin: Checking subject:", identity.subject);
-    
     // Check by user ID (subject)
     if (identity.subject === adminUserId) {
-      console.log("isAdmin: Admin found by subject ID");
       return true;
     }
     
@@ -147,14 +141,10 @@ const isAdmin = (identity: any): boolean => {
                      identity.email || 
                      (identity.primaryEmailAddress && identity.primaryEmailAddress.emailAddress);
     
-    console.log("isAdmin: Checking email:", userEmail);
-    
     if (userEmail === adminEmail) {
-      console.log("isAdmin: Admin found by email");
       return true;
     }
     
-    console.log("isAdmin: Not admin");
     return false;
   } catch (error) {
     console.error("Error in isAdmin function:", error);
@@ -274,26 +264,22 @@ export const testAuth = query({
   },
 });
 
+
+
 // Check if current user is admin using simple hardcoded check
 export const isCurrentUserAdmin = query({
   args: {},
   handler: async (ctx) => {
     try {
-      console.log("isCurrentUserAdmin: Starting query");
       const identity = await ctx.auth.getUserIdentity();
-      console.log("isCurrentUserAdmin: Got identity:", JSON.stringify(identity, null, 2));
       
       if (!identity) {
-        console.log("isCurrentUserAdmin: No identity found");
         return false; // User not authenticated
       }
       
-      const result = isAdmin(identity);
-      console.log("isCurrentUserAdmin: Admin check result:", result);
-      return result;
+      return isAdmin(identity);
     } catch (error) {
       console.error("Error in isCurrentUserAdmin query:", error);
-      console.error("Error stack:", error instanceof Error ? error.stack : 'No stack trace');
       return false; // Default to non-admin if there's an error
     }
   },
@@ -363,4 +349,43 @@ export const getOnlineUsersCount = query({
     
     return onlineUsers.length;
   },
-}); 
+});
+
+// Get current user info by userId (for dynamic rendering)
+export const getCurrentUserInfo = query({
+  args: { userId: v.optional(v.string()) },
+  handler: async (ctx, { userId }) => {
+    try {
+      if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+        return {
+          username: 'Unknown User',
+          avatarUrl: null,
+        };
+      }
+
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_id", (q) => q.eq("clerkId", userId))
+        .first();
+      
+      if (!user) {
+        // Return fallback if user not found
+        return {
+          username: 'Unknown User',
+          avatarUrl: null,
+        };
+      }
+      
+      return {
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+      };
+    } catch (error) {
+      console.error("Error in getCurrentUserInfo:", error);
+      return {
+        username: 'Error Loading User',
+        avatarUrl: null,
+      };
+    }
+  },
+});
