@@ -123,19 +123,27 @@ export const searchMessages = query({
 
 // Helper function to check if user is admin (hardcoded for simplicity)
 const isAdmin = (identity: any): boolean => {
-  if (!identity) return false;
-  
-  const adminUserId = 'user_30UslN6tLnNxsknxxrs0qBzyWpJ';
-  const adminEmail = 'myles.sanigar@gmail.com';
-  
-  // Check by user ID (subject)
-  if (identity.subject === adminUserId) return true;
-  
-  // Check by email (try different possible email fields)
-  const userEmail = identity.emailAddress || identity.email || identity.primaryEmailAddress?.emailAddress;
-  if (userEmail === adminEmail) return true;
-  
-  return false;
+  try {
+    if (!identity || typeof identity !== 'object') return false;
+    
+    const adminUserId = 'user_30UslN6tLnNxsknxxrs0qBzyWpJ';
+    const adminEmail = 'myles.sanigar@gmail.com';
+    
+    // Check by user ID (subject)
+    if (identity.subject === adminUserId) return true;
+    
+    // Check by email (try different possible email fields with safe access)
+    const userEmail = identity.emailAddress || 
+                     identity.email || 
+                     (identity.primaryEmailAddress && identity.primaryEmailAddress.emailAddress);
+    
+    if (userEmail === adminEmail) return true;
+    
+    return false;
+  } catch (error) {
+    console.error("Error in isAdmin function:", error);
+    return false;
+  }
 };
 
 // Remove the complex setup functions since we're using simple hardcoded admin
@@ -232,9 +240,12 @@ export const isCurrentUserAdmin = query({
   handler: async (ctx) => {
     try {
       const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        return false; // User not authenticated
+      }
       return isAdmin(identity);
     } catch (error) {
-      console.error("Error checking admin status:", error);
+      console.error("Error in isCurrentUserAdmin query:", error);
       return false; // Default to non-admin if there's an error
     }
   },
