@@ -351,6 +351,33 @@ export const getOnlineUsersCount = query({
   },
 });
 
+// Get online users with details (admin only)
+export const getOnlineUsers = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    
+    // Only allow admins to see who's online
+    if (!identity || !isAdmin(identity)) {
+      throw new Error("Access denied: Admin only");
+    }
+
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    const onlineUsers = await ctx.db
+      .query("users")
+      .withIndex("by_online", (q) => q.eq("isOnline", true))
+      .filter((q) => q.gte(q.field("lastSeen"), fiveMinutesAgo))
+      .collect();
+    
+    return onlineUsers.map(user => ({
+      id: user.clerkId,
+      username: user.username,
+      avatarUrl: user.avatarUrl,
+      lastSeen: user.lastSeen,
+    })).sort((a, b) => b.lastSeen - a.lastSeen); // Most recently active first
+  },
+});
+
 // Get current user info by userId (for dynamic rendering)
 export const getCurrentUserInfo = query({
   args: { userId: v.optional(v.string()) },

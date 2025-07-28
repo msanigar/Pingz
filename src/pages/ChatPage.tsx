@@ -7,6 +7,7 @@ import MessageList from '../components/MessageList'
 import MessageInput from '../components/MessageInput'
 import ChannelSidebar from '../components/ChannelSidebar'
 import SearchBar from '../components/SearchBar'
+import OnlineUsersDropdown from '../components/OnlineUsersDropdown'
 
 export default function ChatPage() {
   const { user } = useUser()
@@ -14,6 +15,7 @@ export default function ChatPage() {
   
   const messages = useQuery(api.chat.getMessages, { channel: currentChannel })
   const onlineUsersCount = useQuery(api.chat.getOnlineUsersCount)
+  const isAdmin = useQuery(api.chat.isCurrentUserAdmin)
   const sendMessage = useMutation(api.chat.sendMessage)
   const updateUserPresence = useMutation(api.chat.updateUserPresence)
 
@@ -90,10 +92,10 @@ export default function ChatPage() {
             <div>
               <h1 className="text-xl font-bold gradient-text">#{currentChannel}</h1>
               {onlineUsersCount !== undefined && (
-                <div className="flex items-center space-x-2 text-sm text-chat-text-muted">
-                  <div className="online-indicator"></div>
-                  <span>{onlineUsersCount} online</span>
-                </div>
+                <OnlineUsersDropdown 
+                  onlineCount={onlineUsersCount} 
+                  isAdmin={isAdmin || false} 
+                />
               )}
             </div>
           </div>
