@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'JetBrains Mono', 'Menlo', 'Monaco', 'Courier New', monospace;
+  }
+  
+  body {
+    @apply bg-chat-bg text-chat-text;
+    margin: 0;
+    padding: 0;
+  }
+  
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  .chat-input {
+    @apply bg-chat-surface border border-chat-border text-chat-text placeholder-chat-text-muted;
+    @apply focus:border-chat-accent focus:ring-1 focus:ring-chat-accent;
+  }
+  
+  .chat-message {
+    @apply font-mono text-sm leading-relaxed;
+  }
+  
+  .chat-timestamp {
+    @apply text-chat-text-muted text-xs;
+  }
+} 
